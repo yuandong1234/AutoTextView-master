@@ -57,6 +57,7 @@ public class AutoTextView extends View {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         mViewWidth = MeasureSpec.getSize(widthMeasureSpec);
         Log.e(TAG, "mViewWidth : " + mViewWidth);
+        //TODO  添加默认内边距
         setMeasuredDimension(mViewWidth, mViewHeight);
     }
 
