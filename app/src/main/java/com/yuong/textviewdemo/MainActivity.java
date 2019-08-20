@@ -23,7 +23,8 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                tv_content.setText("抢票时间：2019.08.20 14:55-15:55");
+//                tv_content.setText("抢票时间：2019.08.20 14:55-15:55");
+                tv_content.setText("It raked in more than 675 million yuan on Aug. 3-4, contributing nearly 65 percent to the total box office revenue of the outgoing weekend, said the network.");
             }
         });
     }
