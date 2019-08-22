@@ -6,7 +6,7 @@ import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
 
-    private AutoTextView tv_content;
+    private AutoTextView autoTextView;
     private String mText = "抢票时间：2019.08.20 14:55-2019.08.31 14:55";
 
     @Override
@@ -18,13 +18,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        tv_content = findViewById(R.id.tv_content);
-        tv_content.setText(mText);
+        autoTextView = findViewById(R.id.autoTextView);
+        autoTextView.setText(mText);
         findViewById(R.id.btn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                tv_content.setText("抢票时间：2019.08.20 14:55-15:55");
-                tv_content.setText("It raked in more than 675 million yuan on Aug. 3-4, contributing nearly 65 percent to the total box office revenue of the outgoing weekend, said the network.");
+                autoTextView.setText("It raked in more than 675 million yuan on Aug. 3-4, contributing nearly 65 percent to the total box office revenue of the outgoing weekend, said the network.");
             }
         });
     }

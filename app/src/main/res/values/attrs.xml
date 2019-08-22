@@ -8,5 +8,6 @@
         <attr name="paddingRight" format="dimension" />
         <attr name="paddingTop" format="dimension" />
         <attr name="paddingBottom" format="dimension" />
+        <attr name="lineSpacingExtra" format="dimension" />
     </declare-styleable>
 </resources>

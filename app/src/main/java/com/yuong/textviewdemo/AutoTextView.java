@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +17,9 @@ import java.util.List;
 /**
  * 自适应TextView
  */
-public class AutoTextView extends View {
+public class AutoTextView extends TextView {
     private final static String TAG = AutoTextView.class.getSimpleName();
-    private int mLineSpacingExtra = 5;//行间距
-    private int mLineHeight;//行高
+    private int mLineSpacingExtra;//行间距
     private int mTextSize;//文字大小
     private int mTextColor;//文字颜色
     private int mPaddingLeft;//左内边距
@@ -54,9 +54,10 @@ public class AutoTextView extends View {
         mPaddingTop = (int) typedArray.getDimension(R.styleable.AutoTextView_paddingTop, 0);
         mPaddingRight = (int) typedArray.getDimension(R.styleable.AutoTextView_paddingRight, 0);
         mPaddingBottom = (int) typedArray.getDimension(R.styleable.AutoTextView_paddingBottom, 0);
+        mLineSpacingExtra = (int) typedArray.getDimension(R.styleable.AutoTextView_lineSpacingExtra, 0);
         Log.e(TAG, "mPaddingBottom : " + mPaddingBottom);
         float textSize = typedArray.getFloat(R.styleable.AutoTextView_textSize, 14);
-        mLineHeight = mTextSize = sp2px(context, textSize);
+        mTextSize = sp2px(context, textSize);
         typedArray.recycle();
     }
 
@@ -73,8 +74,12 @@ public class AutoTextView extends View {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         mViewWidth = MeasureSpec.getSize(widthMeasureSpec);
         Log.e(TAG, "mViewWidth : " + mViewWidth);
-        int height = mTextHeight != 0 ? (mTextHeight + mPaddingTop + mPaddingBottom) : (1 + mPaddingTop + mPaddingBottom);
-        setMeasuredDimension(mViewWidth, height);
+        if (mTextHeight != 0) {
+            int height = mTextHeight + mPaddingTop + mPaddingBottom;
+            setMeasuredDimension(mViewWidth, height);
+        }
+
+
     }
 
     @Override
@@ -86,13 +91,23 @@ public class AutoTextView extends View {
     private void drawText(Canvas canvas) {
         List<String> lines = computeLineTexts();
         if (lines != null) {
+            float startX = mPaddingLeft;
+            Paint.FontMetrics fontMetrics = mPaint.getFontMetrics();
+            float bottom = fontMetrics.bottom;
+            float top = fontMetrics.top;
+            float lineHeight = bottom - top;//每一行文本的高度
             for (int i = 0; i < lines.size(); i++) {
                 String text = lines.get(i);
-                float startX = mPaddingLeft;
-                float startY = mLineHeight * (i + 1) + mLineSpacingExtra * i + mPaddingTop;
+                /**
+                 * 获取baseline lineHeight * (i + 1) - descent
+                 * 行间距 mLineSpacingExtra * i
+                 * view 上内边距 mPaddingTop
+                 */
+                float startY = lineHeight * (i + 1) - bottom + mLineSpacingExtra * i + mPaddingTop;
                 canvas.drawText(text, startX, startY, mPaint);
             }
-            mTextHeight = lines.size() * mLineHeight + (lines.size() - 1) * mLineSpacingExtra;
+            float textHeight = lines.size() * lineHeight + (lines.size() - 1) * mLineSpacingExtra;
+            mTextHeight = Math.round(textHeight);
             requestLayout();
         }
     }
