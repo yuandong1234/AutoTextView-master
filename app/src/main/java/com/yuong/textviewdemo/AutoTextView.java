@@ -99,9 +99,9 @@ public class AutoTextView extends TextView {
             for (int i = 0; i < lines.size(); i++) {
                 String text = lines.get(i);
                 /**
-                 * 获取baseline lineHeight * (i + 1) - descent
-                 * 行间距 mLineSpacingExtra * i
-                 * view 上内边距 mPaddingTop
+                 * 获取baseline     lineHeight * (i + 1) - bottom
+                 * 行间距   mLineSpacingExtra * i
+                 * view 上内边距   mPaddingTop
                  */
                 float startY = lineHeight * (i + 1) - bottom + mLineSpacingExtra * i + mPaddingTop;
                 canvas.drawText(text, startX, startY, mPaint);
