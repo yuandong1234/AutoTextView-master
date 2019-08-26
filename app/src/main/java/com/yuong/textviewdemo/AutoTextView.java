@@ -5,11 +5,10 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.support.v7.widget.AppCompatTextView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.View;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +16,7 @@ import java.util.List;
 /**
  * 自适应TextView
  */
-public class AutoTextView extends TextView {
+public class AutoTextView extends AppCompatTextView {
     private final static String TAG = AutoTextView.class.getSimpleName();
     private int mLineSpacingExtra;//行间距
     private int mTextSize;//文字大小
@@ -29,7 +28,9 @@ public class AutoTextView extends TextView {
 
     private int mViewWidth;
     private int mTextHeight;//文本高度
+    private float mLineHeight;//每行高度
     private String mText;
+    private List<String> mLines = new ArrayList<>();
 
     private Paint mPaint;
 
@@ -55,7 +56,6 @@ public class AutoTextView extends TextView {
         mPaddingRight = (int) typedArray.getDimension(R.styleable.AutoTextView_paddingRight, 0);
         mPaddingBottom = (int) typedArray.getDimension(R.styleable.AutoTextView_paddingBottom, 0);
         mLineSpacingExtra = (int) typedArray.getDimension(R.styleable.AutoTextView_lineSpacingExtra, 0);
-        Log.e(TAG, "mPaddingBottom : " + mPaddingBottom);
         float textSize = typedArray.getFloat(R.styleable.AutoTextView_textSize, 14);
         mTextSize = sp2px(context, textSize);
         typedArray.recycle();
@@ -73,42 +73,37 @@ public class AutoTextView extends TextView {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         mViewWidth = MeasureSpec.getSize(widthMeasureSpec);
+        Log.e(TAG, "onMeasure....");
         Log.e(TAG, "mViewWidth : " + mViewWidth);
+        computeLineTexts();
+        Log.e(TAG, "mTextHeight : " + mTextHeight);
         if (mTextHeight != 0) {
             int height = mTextHeight + mPaddingTop + mPaddingBottom;
             setMeasuredDimension(mViewWidth, height);
         }
-
-
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        Log.e(TAG, "onDraw....");
         drawText(canvas);
     }
 
     private void drawText(Canvas canvas) {
-        List<String> lines = computeLineTexts();
-        if (lines != null) {
+        if (mLines.size() > 0) {
             float startX = mPaddingLeft;
-            Paint.FontMetrics fontMetrics = mPaint.getFontMetrics();
-            float bottom = fontMetrics.bottom;
-            float top = fontMetrics.top;
-            float lineHeight = bottom - top;//每一行文本的高度
-            for (int i = 0; i < lines.size(); i++) {
-                String text = lines.get(i);
+            float bottom = mPaint.getFontMetrics().bottom;
+            for (int i = 0; i < mLines.size(); i++) {
+                String text = mLines.get(i);
                 /**
                  * 获取baseline     lineHeight * (i + 1) - bottom
                  * 行间距   mLineSpacingExtra * i
                  * view 上内边距   mPaddingTop
                  */
-                float startY = lineHeight * (i + 1) - bottom + mLineSpacingExtra * i + mPaddingTop;
+                float startY = mLineHeight * (i + 1) - bottom + mLineSpacingExtra * i + mPaddingTop;
                 canvas.drawText(text, startX, startY, mPaint);
             }
-            float textHeight = lines.size() * lineHeight + (lines.size() - 1) * mLineSpacingExtra;
-            mTextHeight = Math.round(textHeight);
-            requestLayout();
         }
     }
 
@@ -117,21 +112,20 @@ public class AutoTextView extends TextView {
      *
      * @return
      */
-    private List<String> computeLineTexts() {
-        if (TextUtils.isEmpty(mText)) {
-            return null;
-        }
-        List<String> lines = new ArrayList<>();
+    private void computeLineTexts() {
 
+        mLines.clear();
+        if (TextUtils.isEmpty(mText)) {
+            return;
+        }
         String lineText = "";//每一行要绘制的文本
         String tempText = mText;//需要绘制的文本
-
 
         /**
          * 获取实际最大可绘制的宽度
          */
         int innerWidth = mViewWidth - mPaddingLeft - mPaddingRight;
-
+        if (mViewWidth == 0 || innerWidth == 0) return;
         /**
          * 循环计算文本的宽度，大于view的宽度时进行换行
          */
@@ -150,23 +144,33 @@ public class AutoTextView extends TextView {
 //                float width = mBounds.width();
                 if (width > innerWidth) {
                     lineText = tempText.substring(0, i);
-                    lines.add(lineText);
+                    mLines.add(lineText);
                     tempText = tempText.substring(i);
                     break;
                 } else {
                     if (i == tempText.length() - 1) {
-                        lines.add(temp);
+                        mLines.add(temp);
                         tempText = "";
                     }
                 }
             }
         }
-        return lines;
+
+        Paint.FontMetrics fontMetrics = mPaint.getFontMetrics();
+        float bottom = fontMetrics.bottom;
+        float top = fontMetrics.top;
+        mLineHeight = bottom - top;//每一行文本的高度
+
+        float textHeight = mLines.size() * mLineHeight + (mLines.size() - 1) * mLineSpacingExtra;
+        mTextHeight = Math.round(textHeight);
     }
 
     public void setText(String text) {
         this.mText = text;
-        invalidate();
+        Log.e(TAG, "AutoTextView set txt.");
+        if (mViewWidth > 0) {
+            requestLayout();
+        }
     }
 
     public int sp2px(Context context, float spValue) {
